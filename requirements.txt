@@ -1,0 +1,5 @@
+firebase-admin
+flask
+web3
+celery
+redis

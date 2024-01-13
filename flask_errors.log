@@ -1,0 +1,1 @@
+2024-01-13T06:05:37.810874: ERROR - Request Data: {'function_name': 'updateFactorXx', 'function_params': {'token_id': 4, 'user_address': '0x724be7c8b05bfba2d8c1fafdf52bf07650f78653', 'factorX': 12345}} - Error: Function does not exist

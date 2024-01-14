@@ -3,9 +3,12 @@ import redis
 from flask import Flask
 from google.cloud import secretmanager
 
-from .utils import celery_init_app, init_db
+from .utils import celery_init_app, init_db, init_w3
 
 project_id = "flutter-app-demo-da31e"
+
+w3_init, contract_init =  init_w3()
+
 app = Flask(__name__)
 app.config.from_mapping(
     CELERY=dict(

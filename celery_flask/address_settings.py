@@ -1,8 +1,6 @@
 
-from web3 import Web3
-from web3.middleware import geth_poa_middleware
 
-from celery_flask import clientSecret, project_id, redis_init
+from celery_flask import clientSecret, project_id, redis_init, w3_init
 
 admin_addresses = ["0xE25eD8b08296aC41EbFD0987CbcAe5f30D67A82c", "0x040dF6198086b2FA8a452e592046a451fE173721", "0xBA9DfEa2cf33Ceda505057BAed759573a6E81643"]
 
@@ -36,11 +34,16 @@ def get_and_increment_nonce(address):
     nonce = redis_init.get(key)
     if nonce is None:
         # Burada Ethereum ağından gerçek nonce değerini alın
-        w3 = Web3(Web3.HTTPProvider('https://polygon-mumbai.g.alchemy.com/v2/HTAxg7fG4iLGhAueAQEObeaqlzNM1qMH/'))
-        w3.middleware_onion.inject(geth_poa_middleware, layer=0)
-        nonce = w3.eth.get_transaction_count(w3.to_checksum_address(address))
+
+        nonce = w3_init.eth.get_transaction_count(w3_init.to_checksum_address(address))
     else:
         nonce = int(nonce)
     # Nonce değerini arttır ve kaydet
     redis_init.set(key, nonce + 1)
     return nonce
+
+
+def update_nonce(address):
+    key= f"nonce:{address}"
+    nonce = w3_init.eth.get_transaction_count(w3_init.to_checksum_address(address))
+    redis_init.set(key,nonce)

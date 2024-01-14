@@ -1,10 +1,11 @@
 import datetime
 import json
 import sqlite3
-import traceback
 
 from celery import Celery, Task
 from flask import Flask, request
+from web3 import Web3
+from web3.middleware import geth_poa_middleware
 
 
 def init_db(app: Flask):
@@ -82,3 +83,16 @@ def celery_init_app(app: Flask) -> Celery:
     
     return celery_app
 
+
+def init_w3():
+    w3_init = Web3(Web3.HTTPProvider('https://polygon-mumbai.g.alchemy.com/v2/HTAxg7fG4iLGhAueAQEObeaqlzNM1qMH/'))
+    w3_init.middleware_onion.inject(geth_poa_middleware, layer=0)
+
+    with open('/media/sf_VBoxSharedFiles/nftAbi.json', 'r') as abi_file:
+        contract_abi = json.load(abi_file)
+
+
+    contract_address = w3_init.to_checksum_address("0x9D51bBaB56C01e90DbaCCBD99ca97B0CE2155CDf")
+    contract = w3_init.eth.contract(address=contract_address, abi=contract_abi)
+    
+    return w3_init, contract

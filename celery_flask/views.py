@@ -1,18 +1,14 @@
-import datetime
-import json
-import sqlite3
-
 from firebase_admin import auth
 from flask import jsonify, request
 
 from celery_flask import app
 from celery_flask.tasks import admin_action
 
-from .address_settings import get_address_private_nonce, get_next_admin_index
+from .address_settings import (admin_addresses, get_address_private_nonce,
+                               get_next_admin_index, nonce_controll)
 from .utils import log_flask_error
 
 function_list = ["updateFactorX", "levelUp", "mintReward", "changeInitialPrice"]
-
 
 
 ############### FLASK ###############
@@ -28,6 +24,7 @@ def admin_action_endpoint():
         token = token.split("Bearer ")[1]
         decoded_token = auth.verify_id_token(token)
         uid = decoded_token["uid"]
+        
     except Exception as e:
         log_flask_error(e)
         return jsonify(message="You are not allowed"), 500
@@ -36,6 +33,7 @@ def admin_action_endpoint():
     
     current_admin_index = get_next_admin_index()
     
+    nonce_controll()
 
     worker_admin, worker_private, nonce = get_address_private_nonce(current_admin_index)
 

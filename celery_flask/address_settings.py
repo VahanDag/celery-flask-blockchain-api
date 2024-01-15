@@ -1,5 +1,3 @@
-
-
 from celery_flask import clientSecret, project_id, redis_init, w3_init
 
 admin_addresses = ["0xE25eD8b08296aC41EbFD0987CbcAe5f30D67A82c", "0x040dF6198086b2FA8a452e592046a451fE173721", "0xBA9DfEa2cf33Ceda505057BAed759573a6E81643"]
@@ -28,13 +26,10 @@ def get_next_admin_index():
     return current_index
 
 
-
 def get_and_increment_nonce(address):
     key = f"nonce:{address}"
     nonce = redis_init.get(key)
     if nonce is None:
-        # Burada Ethereum ağından gerçek nonce değerini alın
-
         nonce = w3_init.eth.get_transaction_count(w3_init.to_checksum_address(address))
     else:
         nonce = int(nonce)
@@ -43,7 +38,24 @@ def get_and_increment_nonce(address):
     return nonce
 
 
-def update_nonce(address):
-    key= f"nonce:{address}"
-    nonce = w3_init.eth.get_transaction_count(w3_init.to_checksum_address(address))
-    redis_init.set(key,nonce)
+def update_all_nonce():
+    for address in admin_addresses:
+        key= f"nonce:{address}"
+        nonce = w3_init.eth.get_transaction_count(w3_init.to_checksum_address(address))
+        redis_init.set(key,nonce)
+        print(f"NONCE IS HERE {nonce} {address}")
+        
+        
+def nonce_controll():
+    key = "nonce_counter_index"
+    current_index = redis_init.get(key)
+    if current_index is None:
+        current_index = 0
+    else:
+        current_index = int(current_index)
+    
+    if current_index > 6:
+        update_all_nonce()
+    else:
+        current_index+=1
+        redis_init.set(key,current_index)

@@ -3,7 +3,6 @@ from web3 import exceptions
 
 from celery_flask import celery, contract_init, w3_init
 
-from .address_settings import update_nonce
 from .utils import log_flask_error
 
 
@@ -48,9 +47,7 @@ def admin_action(self,data, admin_address, admin_private_key, nonce):
             gas_estimate += int(gas_estimate * 0.20)
         except exceptions.ContractLogicError as error:
             log_flask_error(f"GAS ESTIMATE: {error}")
-            update_nonce(admin_address)
-            raise self.retry(exc=error, max_retries =3)
-
+            raise self.retry(exc=error,max_retries =3)
 
 
         txn = contract_function.build_transaction({
@@ -61,11 +58,10 @@ def admin_action(self,data, admin_address, admin_private_key, nonce):
 
         signed_txn = w3_init.eth.account.sign_transaction(txn, private_key=admin_private_key)
         txn_hash = w3_init.eth.send_raw_transaction(signed_txn.rawTransaction)
-        w3_init.eth.wait_for_transaction_receipt(txn_hash)
-
+        # w3_init.eth.wait_for_transaction_receipt(txn_hash)
         
     except Exception as exc:
-        update_nonce(admin_address)
+        # update_nonce(admin_address)
         raise self.retry(exc=exc, max_retries=3)
     
     return {
